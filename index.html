@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management System</title>
+    <!-- Include Chart.js for dashboard visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .menu-item p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .order-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-preparing { background: #d4edda; color: #155724; }
+        .status-ready { background: #d1ecf1; color: #0c5460; }
+        .status-delivered { background: #f8d7da; color: #721c24; }
+        .status-cancelled { background: #e2e3e5; color: #41464b; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .inventory-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inventory-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .inventory-quantity {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .low-stock {
+            color: #ff6b6b;
+        }
+
+        .payment-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .total-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .total-final {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 10px;
+        }
+
+        .auth-section {
+            max-width: 400px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .chart-container {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 200px;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-methods {
+                flex-direction: column;
+            }
+            
+            .auth-section {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="auth" class="section active">
+            <div class="auth-section">
+                <h2 id="auth-title">Login</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="authUsername" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" placeholder="Enter password">
+                </div>
+                <div id="registerFields" style="display: none;">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="authEmail" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="authRole">
+                            <option value="customer">Customer</option>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="handleAuth()">Login</button>
+                <div class="auth-toggle" onclick="toggleAuthMode()">
+                    Don't have an account? Register here
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App (Hidden until logged in) -->
+        <div id="mainApp" style="display: none;">
+            <div class="header">
+                <h1>🍽️ Restaurant Management System</h1>
+                <p>Complete solution for restaurant operations</p>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+                <div class="nav-buttons" id="navButtons">
+                    <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+                    <button class="nav-btn" onclick="showSection('menu')">Menu Management</button>
+                    <button class="nav-btn" onclick="showSection('orders')">Orders</button>
+                    <button class="nav-btn" onclick="showSection('customer')">Customer Order</button>
+                    <button class="nav-btn" onclick="showSection('inventory')">Inventory</button>
+                    <button class="nav-btn" onclick="showSection('payments')">Payments</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalOrders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRevenue">₹0</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingOrders">0</div>
+                        <div class="stat-label">Pending Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="menuItems">0</div>
+                        <div class="stat-label">Menu Items</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lowStock">0</div>
+                        <div class="stat-label">Low Stock Items</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Menu Management Section -->
+            <div id="menu" class="section">
+                <h2>🍴 Menu Management</h2>
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" id="itemName" placeholder="Enter item name">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="itemDescription" placeholder="Enter item description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="itemPrice" placeholder="Enter price">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="itemCategory">
+                        <option value="appetizer">Appetizer</option>
+                        <option value="main">Main Course</option>
+                        <option value="dessert">Dessert</option>
+                        <option value="beverage">Beverage</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image</label>
+                    <input type="file" id="itemImage" accept="image/*">
+                </div>
+                <button class="btn" onclick="addMenuItem()">Add Menu Item</button>
+                <div id="menuList" class="menu-grid"></div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders" class="section">
+                <h2>📋 Order Management</h2>
+                <div id="ordersList"></div>
+            </div>
+
+            <!-- Customer Order Section -->
+            <div id="customer" class="section">
+                <h2>🛒 Place Order</h2>
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="customerName" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="customerPhone" placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="customerEmail" placeholder="Enter email">
+                </div>
+                <h3>Select Items</h3>
+                <div id="customerMenu" class="menu-grid"></div>
+                <div id="cart" class="total-section" style="display: none;">
+                    <h3>Cart</h3>
+                    <div id="cartItems"></div>
+                    <div class="total-row total-final">
+                        <span>Total: ₹<span id="cartTotal">0</span></span>
+                    </div>
+                    <button class="btn btn-success" onclick="placeOrder()">Place Order</button>
+                </div>
+            </div>
+
+            <!-- Inventory Section -->
+            <div id="inventory" class="section">
+                <h2>📦 Inventory Management</h2>
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" id="invItemName" placeholder="Enter item name">
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="invQuantity" placeholder="Enter quantity">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <input type="text" id="invUnit" placeholder="kg, pcs, liters, etc.">
+                </div>
+                <div class="form-group">
+                    <label>Minimum Quantity</label>
+                    <input type="number" id="invMinQuantity" placeholder="Enter minimum quantity">
+                </div>
+                <div class="form-group">
+                    <label>Cost per Unit (₹)</label>
+                    <input type="number" id="invCostPerUnit" placeholder="Enter cost per unit">
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <input type="text" id="invSupplier" placeholder="Enter supplier name">
+                </div>
+                <button class="btn" onclick="addInventoryItem()">Add Inventory Item</button>
+                <div id="inventoryList"></div>
+            </div>
+
+            <!-- Payments Section -->
+            <div id="payments" class="section">
+                <h2>💳 Payment Processing</h2>
+                <div class="payment-section">
+                    <h3>Payment Methods</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method" onclick="selectPaymentMethod('cash')">
+                            💵 Cash
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('card')">
+                            💳 Card
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('upi')">
+                            📱 UPI
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('wallet')">
+                            💰 Wallet
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('razorpay')">
+                            💸 Razorpay
+                        </div>
+                    </div>
+                    <div id="paymentDetails" style="display: none;">
+                        <div class="form-group">
+                            <label>Amount (₹)</label>
+                            <input type="number" id="paymentAmount" placeholder="Enter amount">
+                        </div>
+                        <button class="btn btn-success" onclick="processPayment()">Process Payment</button>
+                    </div>
+                </div>
+                <div id="paymentHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        // Authentication state
+        let user = null;
+        let cart = [];
+        let selectedPaymentMethod = '';
+
+        // Helper function for API calls
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            };
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+            const response = await fetch(`/api${endpoint}`, options);
+            if (!response.ok) throw new Error(await response.text());
+            return response.json();
+        }
+
+        // Authentication
+        async function handleAuth() {
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+            const isLogin = document.getElementById('auth-title').textContent === 'Login';
+
+            try {
+                if (isLogin) {
+                    const data = await apiCall('/login', 'POST', { username, password });
+                    localStorage.setItem('token', data.token);
+                    user = data.user;
+                    showMainApp();
+                    initializeData();
+                } else {
+                    const email = document.getElementById('authEmail').value;
+                    const role = document.getElementById('authRole').value;
+                    await apiCall('/register', 'POST', { username, email, password, role });
+                    alert('Registration successful! Please log in.');
+                    toggleAuthMode();
+                }
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        function toggleAuthMode() {
+            const isLogin = document.getElementById('auth-title').textContent === 'Login';
+            document.getElementById('auth-title').textContent = isLogin ? 'Register' : 'Login';
+            document.getElementById('registerFields').style.display = isLogin ? 'block' : 'none';
+            document.querySelector('.auth-toggle').textContent = isLogin ? 'Already have an account? Login here' : 'Don\'t have an account? Register here';
+            document.querySelector('.btn-success').textContent = isLogin ? 'Register' : 'Login';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            user = null;
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('auth').classList.add('active');
+        }
+
+        function showMainApp() {
+            document.getElementById('auth').classList.remove('active');
+            document.getElementById('mainApp').style.display = 'block';
+            // Role-based access
+            const navButtons = document.getElementById('navButtons');
+            navButtons.innerHTML = '';
+            const sections = [
+                { id: 'dashboard', label: 'Dashboard', roles: ['admin', 'staff', 'customer'] },
+                { id: 'menu', label: 'Menu Management', roles: ['admin', 'staff'] },
+                { id: 'orders', label: 'Orders', roles: ['admin', 'staff'] },
+                { id: 'customer', label: 'Customer Order', roles: ['customer'] },
+                { id: 'inventory', label: 'Inventory', roles: ['admin', 'staff'] },
+                { id: 'payments', label: 'Payments', roles: ['admin', 'staff'] }
+            ];
+            sections.forEach((section, index) => {
+                if (section.roles.includes(user.role)) {
+                    const btn = document.createElement('button');
+                    btn.className = `nav-btn ${index === 0 ? 'active' : ''}`;
+                    btn.onclick = () => showSection(section.id);
+                    btn.textContent = section.label;
+                    navButtons.appendChild(btn);
+                }
+            });
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize data
+        async function initializeData() {
+            try {
+                await Promise.all([
+                    fetchMenuItems(),
+                    fetchOrders(),
+                    fetchInventory(),
+                    fetchPayments(),
+                    updateDashboard()
+                ]);
+            } catch (error) {
+                alert('Error initializing data: ' + error.message);
+            }
+        }
+
+        // Menu Management
+        async function addMenuItem() {
+            const name = document.getElementById('itemName').value;
+            const description = document.getElementById('itemDescription').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const category = document.getElementById('itemCategory').value;
+            const image = document.getElementById('itemImage').files[0];
+
+            if (!name || !description || !price || !category) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            try {
+                let image_url = null;
+                if (image) {
+                    const formData = new FormData();
+                    formData.append('image', image);
+                    const imageResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                        body: formData
+                    });
+                    if (imageResponse.ok) {
+                        image_url = (await imageResponse.json()).image_url;
+                    }
+                }
+
+                await apiCall('/menu', 'POST', { name, description, price, category, image_url });
+                alert('Menu item added successfully!');
+                await fetchMenuItems();
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemDescription').value = '';
+                document.getElementById('itemPrice').value = '';
+                document.getElementById('itemImage').value = '';
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        async function fetchMenuItems() {
+            const items = await apiCall('/menu');
+            displayMenuItems(items);
+            displayCustomerMenu(items);
+            updateDashboard();
+        }
+
+        function displayMenuItems(items) {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+            items.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <div class="price">₹${item.price}</div>
+                    <span class="order-status status-${item.category}">${item.category}</span>
+                    ${item.image_url ? `<img src="${item.image_url}" style="max-width: 100px; margin-top: 10px;" />` : ''}
+                    <br><br>
+                    <button class="btn btn-danger" onclick="removeMenuItem(${item.id})">Remove</button>
+                `;
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        async function removeMenuItem(id) {
+            try {
+                await apiCall(`/menu/${id}`, 'DELETE');
+                await fetchMenuItems();
+                alert('Menu item removed successfully!');
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Customer Order Management
+        function displayCustomerMenu(items) {
+            const customerMenu = document.getElementById('customerMenu');
+            customerMenu.innerHTML = '';
+            items.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <div class="price">₹${item.price}</div>
+                    <span class="order-status status-${item.category}">${item.category}</span>
+                    ${item.image_url ? `<img src="${item.image_url}" style="max-width: 100px; margin-top: 10px;" />` : ''}
+                    <br><br>
+                    <button class="btn" onclick="addToCart(${item.id})">Add to Cart</button>
+                `;
+                customerMenu.appendChild(menuItem);
+            });
+        }
+
+        function addToCart(itemId) {
+            const item = document.querySelector(`#customerMenu .menu-item:has(button[onclick='addToCart(${itemId})'])`);
+            const name = item.querySelector('h3').textContent;
+            const price = parseFloat(item.querySelector('.price').textContent.replace('₹', ''));
+            const existingItem = cart.find(cartItem => cartItem.menu_item_id === itemId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ menu_item_id: itemId, name, price, quantity: 1 });
+            }
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const cartDiv = document.getElementById('cart');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                cartDiv.style.display = 'none';
+                return;
+            }
+
+            cartDiv.style.display = 'block';
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'total-row';
+                cartItem.innerHTML = `
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>₹${item.price * item.quantity}</span>
+                    <button class="btn btn-danger" onclick="removeFromCart(${item.menu_item_id})">Remove</button>
+                `;
+                cartItems.appendChild(cartItem);
+                total += item.price * item.quantity;
+            });
+            cartTotal.textContent = total;
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.menu_item_id !== itemId);
+            updateCartDisplay();
+        }
+
+        async function placeOrder() {
+            const customerName = document.getElementById('customerName').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+            const customerEmail = document.getElementById('customerEmail').value;
+            const total = parseFloat(document.getElementById('cartTotal').textContent);
+
+            if (!customerName || !customerPhone || !customerEmail || cart.length === 0) {
+                alert('Please fill customer details and add items to cart');
+                return;
+            }
+
+            try {
+                const orderData = {
+                    customer_name: customerName,
+                    customer_phone: customerPhone,
+                    customer_email: customerEmail,
+                    items: cart,
+                    total_amount: total,
+                    payment_method: 'pending' // Will be updated after payment
+                };
+                const orderResponse = await apiCall('/orders', 'POST', orderData);
+                if (selectedPaymentMethod === 'razorpay') {
+                    initiateRazorpayPayment(orderResponse.orderId, total);
+                } else {
+                    await apiCall(`/payments/${orderResponse.orderId}/process`, 'POST', {
+                        transaction_id: 'CASH_' + Date.now(),
+                        status: 'completed'
+                    });
+                    alert('Order placed successfully!');
+                    await fetchOrders();
+                    await updateDashboard();
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerPhone').value = '';
+                    document.getElementById('customerEmail').value = '';
+                    cart = [];
+                    updateCartDisplay();
+                }
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Razorpay Payment Integration
+        async function initiateRazorpayPayment(orderId, amount) {
+            try {
+                const paymentOrder = await apiCall('/payments/create-razorpay-order', 'POST', { orderId, amount });
+                const options = {
+                    key: 'your_razorpay_key_id', // Replace with actual Razorpay key
+                    amount: paymentOrder.amount,
+                    currency: 'INR',
+                    name: 'Restaurant Management System',
+                    description: `Order #${orderId}`,
+                    order_id: paymentOrder.id,
+                    handler: async function (response) {
+                        try {
+                            await apiCall(`/payments/${orderId}/process`, 'POST', {
+                                transaction_id: response.razorpay_payment_id,
+                                status: 'completed'
+                            });
+                            alert('Payment successful! Order placed.');
+                            await fetchOrders();
+                            await updateDashboard();
+                            document.getElementById('customerName').value = '';
+                            document.getElementById('customerPhone').value = '';
+                            document.getElementById('customerEmail').value = '';
+                            cart = [];
+                            updateCartDisplay();
+                        } catch (error) {
+                            alert('Error processing payment: ' + JSON.parse(error.message).error);
+                        }
+                    },
+                    prefill: {
+                        name: document.getElementById('customerName').value,
+                        email: document.getElementById('customerEmail').value,
+                        contact: document.getElementById('customerPhone').value
+                    },
+                    theme: { color: '#667eea' }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+            } catch (error) {
+                alert('Error initiating payment: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Order Management
+        async function fetchOrders() {
+            const orders = await apiCall('/orders');
+            displayOrders(orders);
+        }
+
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('ordersList');
+            ordersList.innerHTML = '';
+            orders.forEach(order => {
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order-item';
+                orderDiv.innerHTML = `
+                    <div class="order-header">
+                        <h3>Order #${order.id}</h3>
+                        <span class="order-status status-${order.status}">${order.status}</span>
+                    </div>
+                    <p><strong>Customer:</strong> ${order.customer_name} (${order.customer_phone})</p>
+                    <p><strong>Email:</strong> ${order.customer_email || 'N/A'}</p>
+                    <p><strong>Items:</strong> ${order.items}</p>
+                    <p><strong>Total:</strong> ₹${order.total_amount}</p>
+                    <p><strong>Time:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                    <button class="btn" onclick="updateOrderStatus(${order.id}, 'preparing')">Preparing</button>
+                    <button class="btn" onclick="updateOrderStatus(${order.id}, 'ready')">Ready</button>
+                    <button class="btn" onclick="updateOrderStatus(${order.id}, 'delivered')">Delivered</button>
+                    <button class="btn btn-danger" onclick="updateOrderStatus(${order.id}, 'cancelled')">Cancel</button>
+                `;
+                ordersList.appendChild(orderDiv);
+            });
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                await apiCall(`/orders/${orderId}/status`, 'PUT', { status });
+                await fetchOrders();
+                await updateDashboard();
+                alert('Order status updated!');
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Inventory Management
+        async function addInventoryItem() {
+            const name = document.getElementById('invItemName').value;
+            const quantity = parseFloat(document.getElementById('invQuantity').value);
+            const unit = document.getElementById('invUnit').value;
+            const min_quantity = parseFloat(document.getElementById('invMinQuantity').value);
+            const cost_per_unit = parseFloat(document.getElementById('invCostPerUnit').value);
+            const supplier = document.getElementById('invSupplier').value;
+
+            if (!name || !quantity || !unit || !min_quantity || !cost_per_unit || !supplier) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            try {
+                await apiCall('/inventory', 'POST', { item_name: name, quantity, unit, min_quantity, cost_per_unit, supplier });
+                alert('Inventory item added successfully!');
+                await fetchInventory();
+                document.getElementById('invItemName').value = '';
+                document.getElementById('invQuantity').value = '';
+                document.getElementById('invUnit').value = '';
+                document.getElementById('invMinQuantity').value = '';
+                document.getElementById('invCostPerUnit').value = '';
+                document.getElementById('invSupplier').value = '';
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        async function fetchInventory() {
+            const items = await apiCall('/inventory');
+            displayInventory(items);
+        }
+
+        function displayInventory(items) {
+            const inventoryList = document.getElementById('inventoryList');
+            inventoryList.innerHTML = '';
+            items.forEach(item => {
+                const inventoryItem = document.createElement('div');
+                inventoryItem.className = 'inventory-item';
+                inventoryItem.innerHTML = `
+                    <div class="inventory-info">
+                        <h4>${item.item_name}</h4>
+                        <p>Unit: ${item.unit}, Supplier: ${item.supplier || 'N/A'}</p>
+                    </div>
+                    <div class="inventory-quantity ${item.quantity <= item.min_quantity ? 'low-stock' : ''}">
+                        ${item.quantity} ${item.unit}
+                        ${item.quantity <= item.min_quantity ? '⚠️' : ''}
+                    </div>
+                    <button class="btn btn-danger" onclick="removeInventoryItem(${item.id})">Remove</button>
+                `;
+                inventoryList.appendChild(inventoryItem);
+            });
+        }
+
+        async function removeInventoryItem(id) {
+            try {
+                await apiCall(`/inventory/${id}`, 'DELETE');
+                await fetchInventory();
+                alert('Inventory item removed successfully!');
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Payment Management
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+            document.getElementById('paymentDetails').style.display = method === 'razorpay' ? 'none' : 'block';
+        }
+
+        async function processPayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+
+            if (!selectedPaymentMethod || !amount) {
+                alert('Please select payment method and enter amount');
+                return;
+            }
+
+            try {
+                const lastOrder = (await apiCall('/orders')).slice(-1)[0];
+                await apiCall(`/payments/${lastOrder.id}/process`, 'POST', {
+                    transaction_id: `${selectedPaymentMethod.toUpperCase()}_${Date.now()}`,
+                    status: 'completed'
+                });
+                alert('Payment processed successfully!');
+                await fetchPayments();
+                await updateDashboard();
+                document.getElementById('paymentAmount').value = '';
+                selectedPaymentMethod = '';
+                document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+                document.getElementById('paymentDetails').style.display = 'none';
+            } catch (error) {
+                alert('Error: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        async function fetchPayments() {
+            const payments = await apiCall('/payments');
+            displayPaymentHistory(payments);
+        }
+
+        function displayPaymentHistory(payments) {
+            const paymentHistory = document.getElementById('paymentHistory');
+            paymentHistory.innerHTML = '<h3>Payment History</h3>';
+            payments.forEach(payment => {
+                const paymentDiv = document.createElement('div');
+                paymentDiv.className = 'order-item';
+                paymentDiv.innerHTML = `
+                    <div class="order-header">
+                        <h4>Payment #${payment.id}</h4>
+                        <span class="order-status status-${payment.status}">${payment.payment_method}</span>
+                    </div>
+                    <p><strong>Customer:</strong> ${payment.customer_name} (${payment.customer_phone})</p>
+                    <p><strong>Amount:</strong> ₹${payment.amount}</p>
+                    <p><strong>Time:</strong> ${new Date(payment.created_at).toLocaleString()}</p>
+                `;
+                paymentHistory.appendChild(paymentDiv);
+            });
+        }
+
+        // Dashboard
+        async function updateDashboard() {
+            try {
+                const stats = await apiCall('/dashboard');
+                document.getElementById('totalOrders').textContent = stats.totalOrders;
+                document.getElementById('totalRevenue').textContent = `₹${stats.totalRevenue || 0}`;
+                document.getElementById('pendingOrders').textContent = stats.pendingOrders;
+                document.getElementById('menuItems').textContent = stats.menuItems;
+                document.getElementById('lowStock').textContent = stats.lowStock;
+
+                // Render chart
+                const ctx = document.getElementById('ordersChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total Orders', 'Pending Orders', 'Today\'s Orders'],
+                        datasets: [{
+                            label: 'Order Statistics',
+                            data: [stats.totalOrders, stats.pendingOrders, stats.todayOrders],
+                            backgroundColor: ['#667eea', '#764ba2', '#51cf66']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            } catch (error) {
+                alert('Error updating dashboard: ' + JSON.parse(error.message).error);
+            }
+        }
+
+        // Check if user is already logged in
+        if (localStorage.getItem('token')) {
+            apiCall('/dashboard').then(() => {
+                user = { role: 'customer' }; // Simplified; ideally, verify token and fetch user
+                showMainApp();
+                initializeData();
+            }).catch(() => {
+                localStorage.removeItem('token');
+            });
+        }
+    </script>
+</body>
+</html>
